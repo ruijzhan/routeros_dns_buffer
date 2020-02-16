@@ -5,6 +5,7 @@
 '''
 
 import routeros_api
+import logging
 
 class MyRos():
 
@@ -19,7 +20,7 @@ class MyRos():
             self.addr_list.add(address=domain, list=list_name, timeout=timeout)
         except Exception as e:
             if 'already have such entry' in str(e.original_message):
-                print('List {} already has such domain {}'.format(list_name, domain))
+                logging.info('List {} already has {}'.format(list_name, domain))
                 return False
             elif 'not a valid dns name' in str(e.original_message):
                 return False

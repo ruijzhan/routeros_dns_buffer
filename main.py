@@ -6,6 +6,9 @@ from dotenv import load_dotenv
 import os, sys, signal
 load_dotenv()
 
+import logging
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(message)s')
+
 def main():
     ros = MyRos(host=os.getenv('ROUTEROS_IP'), username=os.getenv('ROUTEROS_USER'),\
         password=os.getenv('ROUTEROS_PASS'))
@@ -16,7 +19,7 @@ def main():
         domain = coreDNS.get_domain()
         if domain and not rediss.has_domain(domain) and '.' in domain:
             if ros.add_domain(domain, 'DNS_buffer_auto', '3d'):
-                print('Added to ROS {}'.format(domain))
+                logging.info('Added to ROS {}'.format(domain))
     
             rediss.add_domain(domain, 3600)
 

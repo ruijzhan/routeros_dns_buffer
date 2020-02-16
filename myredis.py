@@ -5,6 +5,7 @@
 '''
 
 import redis
+import logging
 
 class MyRedis():
     def __init__(self, host, port):

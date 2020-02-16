@@ -5,13 +5,18 @@
 '''
 
 import docker
+import logging
 
 class CoreDNS():
     
     def __init__(self, docker_url, container):
-        self.__client = docker.DockerClient(base_url=docker_url)
-        self.__coredns = self.__client.containers.get(container)
-        self.logger = self.__coredns.logs(follow=True, stream=True, tail=0)
+        try:
+            self.__client = docker.DockerClient(base_url=docker_url)
+            self.__coredns = self.__client.containers.get(container)
+            self.logger = self.__coredns.logs(follow=True, stream=True, tail=0)
+        except Exception as e:
+            logging.error('Docker error')
+            logging.error(e)
 
     def get_domain(self):
         try:
