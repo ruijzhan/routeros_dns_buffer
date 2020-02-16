@@ -14,11 +14,9 @@ def main():
 
     while True:
         domain = coreDNS.get_domain()
-        if domain and not rediss.has_domain(domain):
+        if domain and not rediss.has_domain(domain) and '.' in domain:
             if ros.add_domain(domain, 'DNS_buffer_auto', '3d'):
                 print('Added to ROS {}'.format(domain))
-            else:
-                print('Failed to add to ROS {}'.format(domain))
     
             rediss.add_domain(domain, 3600)
 
