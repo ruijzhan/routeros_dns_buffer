@@ -15,13 +15,12 @@ def main():
     rediss = MyRedis(host=os.getenv('REDIS_HOST'), port=int(os.getenv('REDIS_PORT')))
     coreDNS = CoreDNS(docker_url=os.getenv('DOCKER_ADDR'), container='coredns')
 
-    while True:
-        domain = coreDNS.get_domain()
-        if domain and not rediss.has_domain(domain) and '.' in domain:
-            if ros.add_domain(domain, 'DNS_buffer_auto', '3d'):
+    for domain in coreDNS.domains():
+        if not rediss.has_domain(domain):
+            if ros.add_domain(domain, 'DNS_buffer_auto', '1m'):
                 logging.info('Added to ROS {}'.format(domain))
     
-            rediss.add_domain(domain, 3600)
+            rediss.add_domain(domain, 60)
 
 if __name__ == '__main__':
     def signal_handler(signal, frame):

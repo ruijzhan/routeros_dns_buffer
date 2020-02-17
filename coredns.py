@@ -18,13 +18,13 @@ class CoreDNS():
             logging.error('Docker error')
             logging.error(e)
 
-    def get_domain(self):
-        try:
-            log_line = next(self.logger).decode('utf-8')
-        except StopIteration:
-            print('coredns container error')
-            raise
-        return log_line.split()[-1][:-1] if 'INFO' in log_line else ''
+    def domains(self):
+        for line in self.logger:
+            line = line.decode('utf-8')
+            if 'NOERROR' in line:
+                domain = line.split()[-1][:-1]
+                if '.' in domain:
+                    yield domain
 
 if __name__ == '__main__':
     from dotenv import load_dotenv
@@ -36,7 +36,5 @@ if __name__ == '__main__':
     signal.signal(signal.SIGINT, signal_handler)
 
     coreDNS = CoreDNS(docker_url=os.getenv('DOCKER_ADDR'), container='coredns')
-    while True:
-        d = coreDNS.get_domain()
-        if d:
-            print(d)
+    for d in coreDNS.domains():
+        print(d)
