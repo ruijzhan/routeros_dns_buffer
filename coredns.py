@@ -6,6 +6,7 @@
 
 import docker
 import logging
+import asyncio
 
 class CoreDNS():
     
@@ -14,6 +15,7 @@ class CoreDNS():
             self.__client = docker.DockerClient(base_url=docker_url)
             self.__coredns = self.__client.containers.get(container)
             self.__logging = self.__coredns.logs(follow=True, stream=True, tail=0)
+            self.__loop = asyncio.get_event_loop()
         except Exception as e:
             logging.error('Docker error')
             logging.error(e)
@@ -26,8 +28,11 @@ class CoreDNS():
                 if '.' in domain:
                     yield domain
 
-    async def a_get_domain(self):
+    def get_domain(self):
         return next(self.domains())
+
+    async def a_get_domain(self):
+        return await self.__loop.run_in_executor(None, self.get_domain)
 
 if __name__ == '__main__':
     from dotenv import load_dotenv
@@ -41,8 +46,13 @@ if __name__ == '__main__':
 
     coreDNS = CoreDNS(docker_url=os.getenv('DOCKER_ADDR'), container='coredns')
     loop = asyncio.get_event_loop()
-    cr = coreDNS.a_get_domain()
-    task = asyncio.ensure_future(cr)
-    loop.run_until_complete(task)
+    cr1 = coreDNS.a_get_domain()
+    cr2 = coreDNS.a_get_domain()
+    tasks = [
+        asyncio.ensure_future(cr1), 
+        asyncio.ensure_future(cr2)
+    ]
+    loop.run_until_complete(asyncio.wait(tasks))
 
-    print(task.result())
+    for task in tasks:
+        print(task.result())

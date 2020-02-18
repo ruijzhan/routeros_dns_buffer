@@ -12,17 +12,18 @@ class MyRos():
     def __init__(self, host, username, password):
         self.__connection = routeros_api.RouterOsApiPool(host, \
             username=username, password=password, plaintext_login=True)
-        self.api = self.__connection.get_api()
-        self.addr_list = self.api.get_resource('/ip/firewall/address-list')
+        self.__api = self.__connection.get_api()
+        self.__addr_list = self.__api.get_resource('/ip/firewall/address-list')
 
     def add_domain(self, domain, list_name, timeout):
         try:
-            self.addr_list.add(address=domain, list=list_name, timeout=timeout)
+            self.__addr_list.add(address=domain, list=list_name, timeout=timeout)
         except Exception as e:
-            if 'already have such entry' in str(e.original_message):
+            msg = e.original_message.decode('utf-8')
+            if 'already have such entry' in msg:
                 logging.info('List {} already has {}'.format(list_name, domain))
                 return False
-            elif 'not a valid dns name' in str(e.original_message):
+            elif 'not a valid dns name' in msg:
                 return False
             else:
                 raise
